@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Add Management Staff</h2>
+    <p style="color: var(--gray); margin-bottom: 2rem;">Create accounts for Principal, Burser, Accountant, or Secretary</p>
+    
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label>Username</label>
+            {{ form.username(class="form-control", placeholder="e.g. Principal_John") }}
+            {% for error in form.username.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            {{ form.email(class="form-control", placeholder="name@example.com") }}
+            {% for error in form.email.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="password-wrapper">
+                {{ form.password(class="form-control", placeholder="••••••••", id="user_password") }}
+                <i class="fas fa-eye toggle-password" id="user_eye" onclick="togglePassword('user_password', 'user_eye')"></i>
+            </div>
+            <small style="color: var(--gray);">Min 6 chars, 1 uppercase</small>
+            {% for error in form.password.errors %}
+                <br><span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            {{ form.role(class="form-control") }}
+        </div>
+        <div style="margin-top: 2rem;">
+            {{ form.submit(class="btn btn-primary", style="width: 100%") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Create Monthly Payroll Expense</h2>
+    <p style="color: var(--gray); margin-bottom: 2rem;">Enter the actual number of hours taught for each staff member and generate the payroll for the month.</p>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label>Month</label>
+            {{ form.month(class="form-control") }}
+            {% for error in form.month.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Year</label>
+            {{ form.year(class="form-control", placeholder="e.g. 2026") }}
+            {% for error in form.year.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Period Rate for Fixed Staff (FCFA)</label>
+            {{ form.period_rate(class="form-control", placeholder="e.g. 2000") }}
+            <small style="color: var(--gray);">This rate is used for fixed-salary staff who also taught extra periods.</small>
+            {% for error in form.period_rate.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="table-container" style="margin-bottom: 1.5rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Staff</th>
+                        <th>Role</th>
+                        <th>Payment Type</th>
+                        <th>Fixed Salary</th>
+                        <th>Hourly Rate</th>
+                        <th>Hours Taught</th>
+                        <th>Calculated Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in staff_members %}
+                    <tr data-salary-type="{{ staff.salary_type }}" data-fixed="{{ staff.salary }}" data-hourly="{{ staff.hourly_rate }}">
+                        <td>{{ staff.name }}</td>
+                        <td>{{ staff.position }}</td>
+                        <td>{{ staff.payment_description }}</td>
+                        <td>{% if staff.salary_type == 'HOURLY' %}-{% else %}{{ "{:,.0f}".format(staff.salary or 0) }}{% endif %}</td>
+                        <td>{{ "{:,.0f}".format(staff.hourly_rate or 0) }}</td>
+                        <td>
+                            <input type="number" min="0" class="form-control hours-input" name="hours_{{ staff.id }}" value="0">
+                        </td>
+                        <td class="computed-amount">0</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {{ form.payroll_data(class="form-control", style="display: none;", id="payroll_data") }}
+        {% for error in form.payroll_data.errors %}
+            <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+        {% endfor %}
+
+        <div style="margin-top: 2rem;">    
+            {{ form.submit(class="btn btn-primary", style="width: 100%; background: var(--success);") }}
+        </div>
+    </form>
+</div>
+
+<script>
+function calculateAll() {
+    const periodRate = parseFloat(document.querySelector('input[name="period_rate"]').value) || 0;
+    let total = 0;
+    document.querySelectorAll('table tbody tr').forEach(row => {
+        const salaryType = row.dataset.salaryType;
+        const fixed = parseFloat(row.dataset.fixed) || 0;
+        const hourly = parseFloat(row.dataset.hourly) || 0;
+        const hoursInput = row.querySelector('.hours-input');
+        const hours = parseFloat(hoursInput.value) || 0;
+        let amount = 0;
+        if (salaryType === 'HOURLY') {
+            amount = hourly * hours;
+        } else if (salaryType === 'MIXED') {
+            amount = fixed + (hourly * hours);
+        } else {
+            amount = fixed + (periodRate * hours);
+        }
+        row.querySelector('.computed-amount').textContent = amount.toFixed(0);
+        total += amount;
+    });
+    return total;
+}
+
+function buildPayrollData() {
+    const items = [];
+    document.querySelectorAll('table tbody tr').forEach(row => {
+        const id = row.querySelector('.hours-input').name.replace('hours_', '');
+        const hours = parseFloat(row.querySelector('.hours-input').value) || 0;
+        items.push({ id: parseInt(id), hours: hours });
+    });
+    document.getElementById('payroll_data').value = JSON.stringify(items);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.hours-input').forEach(input => {
+        input.addEventListener('input', calculateAll);
+    });
+    document.querySelector('input[name="period_rate"]').addEventListener('input', calculateAll);
+    document.querySelector('form').addEventListener('submit', function() {
+        calculateAll();
+        buildPayrollData();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="card">
+        <h3>Total Income</h3>
+        <div class="value" style="color: var(--success);">{{ "{:,.0f}".format(total_income) }} FCFA</div>
+    </div>
+    <div class="card">
+        <h3>Total Expenses</h3>
+        <div class="value" style="color: var(--warning);">{{ "{:,.0f}".format(total_expenses) }} FCFA</div>
+    </div>
+    <div class="card">
+        <h3>Balance</h3>
+        <div class="value" style="color: var(--primary);">{{ "{:,.0f}".format(balance) }} FCFA</div>
+    </div>
+    <div class="card">
+        <h3>Staff Count</h3>
+        <div class="value">{{ staff_count }}</div>
+    </div>
+</div>
+
+{% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL'] and pending_staff %}
+<div class="pending-card" style="margin-top: 2rem; padding: 1.5rem; background: #fff7e6; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+    <h3 style="margin-bottom: 1rem; color: var(--warning);">Pending Staff Approvals</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Salary</th>
+                    <th>Academic Year</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in pending_staff %}
+                <tr>
+                    <td><strong>{{ staff.name }}</strong></td>
+                    <td>{{ staff.position }}</td>
+                    <td>{{ staff.department }}</td>
+                    <td>{% if staff.salary_type == 'HOURLY' %}-{% else %}{{ "{:,.0f}".format(staff.salary) }}{% endif %}</td>
+                    <td>{{ staff.academic_year }}</td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('approve_staff', staff_id=staff.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</a>
+                        <a href="{{ url_for('reject_staff', staff_id=staff.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="charts-container">
+    <div class="chart-card">
+        <h3>Income vs Expenses (Last 6 Months)</h3>
+        <canvas id="mainChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Expense Distribution</h3>
+        <canvas id="pieChart"></canvas>
+    </div>
+</div>
+
+<div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+    {% if current_user.role|upper == 'BURSER' %}
+    <a href="{{ url_for('add_income') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Income</a>
+    {% endif %}
+    {% if current_user.role|upper in ['PRINCIPAL', 'BURSER', 'ACCOUNTANT'] %}
+    <a href="{{ url_for('add_expense') }}" class="btn btn-primary" style="background: var(--warning);"><i class="fas fa-minus"></i> Add Expense</a>
+    {% endif %}
+    {% if current_user.role|upper in ['SECRETARY', 'SUPER_ADMIN', 'PRINCIPAL', 'ACCOUNTANT'] %}
+    <a href="{{ url_for('dashboard', show_payroll=1) }}" class="btn btn-primary" style="background: var(--success);"><i class="fas fa-file-invoice-dollar"></i> Payroll</a>
+    {% endif %}
+    <a href="{{ url_for('view_staff') }}" class="btn btn-secondary"><i class="fas fa-users"></i> View Staff</a>
+</div>
+
+{% if current_user.role|upper in ['SECRETARY', 'SUPER_ADMIN', 'PRINCIPAL', 'ACCOUNTANT'] and show_payroll %}
+<div class="pending-card" style="margin-top: 2rem; padding: 1.5rem; background: #ffffff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+    <h3 style="margin-bottom: 1rem; color: var(--primary);">Payroll for {{ month_names[payroll_month] }} {{ payroll_year }}</h3>
+    {% if payroll_record %}
+    <div class="table-container" style="margin-bottom: 1rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Salary Type</th>
+                    <th>Hours</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in payroll_rows %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.position }}</td>
+                    <td>{{ item.department }}</td>
+                    <td>{{ item.salary_type }}</td>
+                    <td>{{ item.hours }}</td>
+                    <td>{{ "{:,.0f}".format(item.hourly_rate or 0) }}</td>
+                    <td>{{ "{:,.0f}".format(item.total_salary) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background: #f8f9fa; font-weight: 700;">
+                    <td colspan="6" style="text-align: right;">Total Payroll</td>
+                    <td>{{ "{:,.0f}".format(payroll_record.total_amount) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div style="color: var(--success);">Payroll record created on {{ payroll_record.created_at.strftime('%Y-%m-%d') }}</div>
+    {% elif allow_edit_payroll %}
+    <form method="POST" action="{{ url_for('add_payroll_expense') }}">
+        {{ payroll_form.hidden_tag() }}
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
+            <div class="form-group" style="min-width: 160px; margin-bottom: 0;">
+                <label>Select Month</label>
+                {{ payroll_form.month(class="form-control") }}
+            </div>
+            <div class="form-group" style="min-width: 140px; margin-bottom: 0;">
+                <label>Year</label>
+                {{ payroll_form.year(class="form-control") }}
+            </div>
+            <div class="form-group" style="min-width: 220px; margin-bottom: 0;">
+                <label>Rate per Period (Fixed Staff)</label>
+                {{ payroll_form.period_rate(class="form-control", placeholder="e.g. 2000") }}
+            </div>
+            <div style="margin-bottom: 0;">
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.75rem;">Save Payroll</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Salary Type</th>
+                        <th>Fixed Salary</th>
+                        <th>Hours</th>
+                        <th>Hourly Rate</th>
+                        <th>Total Salary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in payroll_rows %}
+                    <tr data-salary-type="{{ item.salary_type }}" data-fixed="{{ item.fixed_salary }}" data-hourly="{{ item.hourly_rate }}">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.position }}</td>
+                        <td>{{ item.department }}</td>
+                        <td>{{ item.salary_type }}</td>
+                        <td>{% if item.salary_type == 'HOURLY' %}-{% else %}{{ "{:,.0f}".format(item.fixed_salary) }}{% endif %}</td>
+                        <td>
+                            <input type="number" min="0" class="form-control hours-input" name="hours_{{ item.id }}" value="0">
+                        </td>
+                        <td>{{ "{:,.0f}".format(item.hourly_rate or 0) }}</td>
+                        <td class="computed-amount">0</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background: #f8f9fa; font-weight: 700;">
+                        <td colspan="7" style="text-align: right;">Total Payroll</td>
+                        <td id="payroll-total">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {{ payroll_form.payroll_data(class="form-control", style="display: none;", id="dashboard_payroll_data") }}
+    </form>
+    <script>
+    function calculatePayroll() {
+        const periodRate = parseFloat(document.querySelector('input[name="period_rate"]').value) || 0;
+        let total = 0;
+        const rows = document.querySelectorAll('.hours-input');
+        rows.forEach(input => {
+            const row = input.closest('tr');
+            const salaryType = row.dataset.salaryType;
+            const fixed = parseFloat(row.dataset.fixed) || 0;
+            const hourly = parseFloat(row.dataset.hourly) || 0;
+            const hours = parseFloat(input.value) || 0;
+            let amount = 0;
+            if (salaryType === 'HOURLY') {
+                amount = hourly * hours;
+            } else if (salaryType === 'MIXED') {
+                amount = fixed + (hourly * hours);
+            } else {
+                amount = fixed + (periodRate * hours);
+            }
+            row.querySelector('.computed-amount').textContent = amount.toFixed(0);
+            total += amount;
+        });
+        document.getElementById('payroll-total').textContent = total.toFixed(0);
+        return total;
+    }
+
+    function buildPayrollData() {
+        const items = [];
+        document.querySelectorAll('.hours-input').forEach(input => {
+            const staffId = input.name.replace('hours_', '');
+            const hours = parseFloat(input.value) || 0;
+            items.push({ id: parseInt(staffId), hours: hours });
+        });
+        document.getElementById('dashboard_payroll_data').value = JSON.stringify(items);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.hours-input').forEach(input => {
+            input.addEventListener('input', calculatePayroll);
+        });
+        const periodRateInput = document.querySelector('input[name="period_rate"]');
+        if (periodRateInput) {
+            periodRateInput.addEventListener('input', calculatePayroll);
+        }
+        const form = document.querySelector('form');
+        form.addEventListener('submit', event => {
+            calculatePayroll();
+            buildPayrollData();
+        });
+        calculatePayroll();
+    });
+    </script>
+    {% else %}
+    <div style="padding: 1rem; color: var(--gray);">No payroll has been created for {{ month_names[payroll_month] }} {{ payroll_year }} yet. The secretary can create payroll from the dashboard.</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if current_user.role|upper in ['PRINCIPAL', 'BURSER', 'ACCOUNTANT'] and pending_expenses %}
+<div class="pending-card" style="margin-top: 2rem; padding: 1.5rem; background: #fff7e6; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+    <h3 style="margin-bottom: 1rem; color: var(--warning);">Pending Expense Approvals</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Approvals</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in pending_expenses %}
+                <tr>
+                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td>{{ "{:,.0f}".format(expense.amount) }}</td>
+                    <td>{{ expense.description }}</td>
+                    <td style="line-height: 1.4;">
+                        P: {{ '✔' if expense.approved_principal else '✗' }}<br>
+                        B: {{ '✔' if expense.approved_burser else '✗' }}<br>
+                        A: {{ '✔' if expense.approved_accountant else '✗' }}
+                    </td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('approve_expense', expense_id=expense.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</a>
+                        <a href="{{ url_for('reject_expense', expense_id=expense.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL', 'BURSER', 'ACCOUNTANT'] %}
+<div class="approved-expenses" style="margin-top: 2rem;">
+    <h3>Approved Expenses</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in approved_expenses %}
+                <tr>
+                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td style="color: var(--danger); font-weight: 600;">{{ "{:,.0f}".format(expense.amount) }}</td>
+                    <td>{{ expense.description }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--gray);">No approved expenses yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="staff-list" style="margin-top: 2rem;">
+    <h3>Approved Staff Members</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Salary</th>
+                    <th>Email</th>
+                    <th>Academic Year</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if staff_members %}
+                    {% for staff in staff_members %}
+                    <tr>
+                        <td><strong>{{ staff.name }}</strong></td>
+                        <td>{{ staff.position }}</td>
+                        <td>{{ staff.department }}</td>
+                        <td>{% if staff.salary_type == 'HOURLY' %}-{% else %}{{ "{:,.0f}".format(staff.salary) }}{% endif %}</td>
+                        <td>{{ staff.email }}</td>
+                        <td>{{ staff.academic_year }}</td>
+                        <td>{{ staff.date_joined.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 1.5rem; color: var(--gray);">No approved staff members yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Data passed from Flask
+    const labels = {{ labels|tojson }};
+    const incomeData = {{ income_data|tojson }};
+    const expenseData = {{ expense_data|tojson }};
+</script>
+{% endblock %}

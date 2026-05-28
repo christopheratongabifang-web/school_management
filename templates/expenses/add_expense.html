@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Record School Expense</h2>
+    <p style="color: var(--gray); margin-bottom: 2rem;">Log new expenditures (Utilities, Salaries, etc.)</p>
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label>Amount (FCFA)</label>
+            {{ form.amount(class="form-control", placeholder="e.g. 15000") }}
+            {% for error in form.amount.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            {{ form.category(class="form-control") }}
+            {% for error in form.category.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            {{ form.description(class="form-control", rows="3") }}
+        </div>
+        <div style="margin-top: 2rem;">
+            {{ form.submit(class="btn btn-primary", style="width: 100%; background: var(--warning);") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

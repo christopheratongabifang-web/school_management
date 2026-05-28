@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Staff Directory</h2>
+    {% if current_user.role|upper in ['PRINCIPAL', 'SECRETARY'] %}
+    <a href="{{ url_for('add_staff') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Staff</a>
+    {% endif %}
+</div>
+
+{% if pending_staff %}
+<div style="margin-bottom: 3rem;">
+    <h3 style="color: var(--warning); margin-bottom: 1rem;"><i class="fas fa-clock"></i> Pending Validation</h3>
+    <div class="table-container" style="border: 1px solid var(--warning);">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Payment Type</th>
+                    <th>Hours / Month</th>
+                    <th>Teaching Details</th>
+                    <th>Monthly Pay</th>
+                    <th>Academic Year</th>
+                    {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL'] %}
+                    <th>Action</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in pending_staff %}
+                <tr>
+                    <td><strong>{{ staff.name }}</strong></td>
+                    <td>{{ staff.position }}</td>
+                    <td>{{ staff.department }}</td>
+                    <td>{{ staff.payment_description }}</td>
+                    <td>{{ staff.hours_worked_month or 0 }}</td>
+                    <td>
+                        {% if staff.teaching_list %}
+                            <ul style="margin: 0; padding-left: 1rem;">
+                                {% for item in staff.teaching_list %}
+                                    <li>{{ item.class }}: {{ item.subject }} ({{ item.periods }} periods)</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 600;">{{ "{:,.0f}".format(staff.monthly_pay) }}</td>
+                    <td>{{ staff.academic_year }}</td>
+                    {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL'] %}
+                    <td>
+                        <a href="{{ url_for('approve_staff', staff_id=staff.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--success);"><i class="fas fa-check"></i> Validate</a>
+                        <a href="{{ url_for('reject_staff', staff_id=staff.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-left: 0.25rem;"><i class="fas fa-times"></i> Reject</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Department</th>
+                <th>Payment Type</th>
+                <th>Hours / Week</th>
+                <th>Teaching Details</th>
+                <th>Monthly Pay</th>
+                <th>Email</th>
+                <th>Academic Year</th>
+                <th>Joined Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_members %}
+            <tr>
+                <td><strong>{{ staff.name }}</strong></td>
+                <td>{{ staff.position }}</td>
+                <td>{{ staff.department }}</td>
+                <td>{{ staff.payment_description }}</td>
+                <td>{{ staff.hours_per_week }}</td>
+                <td>
+                    {% if staff.teaching_list %}
+                        <ul style="margin: 0; padding-left: 1rem;">
+                            {% for item in staff.teaching_list %}
+                                <li>{{ item.class }}: {{ item.subject }} ({{ item.periods }} periods)</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600;">{{ "{:,.0f}".format(staff.monthly_pay) }}</td>
+                <td>{{ staff.email }}</td>
+                <td>{{ staff.academic_year }}</td>
+                <td>{{ staff.date_joined.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if current_user.role|upper in ['PRINCIPAL', 'SECRETARY'] %}
+                    <a href="{{ url_for('edit_staff', staff_id=staff.id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--gray);">No pending staff members.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
