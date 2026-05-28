@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Record School Income</h2>
+    <p style="color: var(--gray); margin-bottom: 2rem;">Add new revenue sources (Fees, Donations, etc.)</p>
+    
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label>Amount (FCFA)</label>
+            {{ form.amount(class="form-control", placeholder="e.g. 50000") }}
+        </div>
+        <div class="form-group">
+            <label>Source</label>
+            {{ form.source(class="form-control", placeholder="e.g. Registration Fees") }}
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            {{ form.description(class="form-control", rows="3") }}
+        </div>
+        <div style="margin-top: 2rem;">
+            {{ form.submit(class="btn btn-primary", style="width: 100%") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

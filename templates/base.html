@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Expense Tracker - {{ title if title else 'Dashboard' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <div class="app-container">
+        <aside class="sidebar">
+            <h2>SCHOOL EXPENSE</h2>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}"><i class="fas fa-home"></i> &nbsp; Dashboard</a></li>
+                    
+                    {% if current_user.role == 'SUPER_ADMIN' %}
+                    <li><a href="{{ url_for('add_user') }}" class="{{ 'active' if request.endpoint == 'add_user' }}"><i class="fas fa-user-plus"></i> &nbsp; Add Management</a></li>
+                    {% endif %}
+
+                    {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL', 'SECRETARY'] %}
+                    <li><a href="{{ url_for('view_staff') }}" class="{{ 'active' if 'staff' in request.endpoint }}"><i class="fas fa-users"></i> &nbsp; Staff Management</a></li>
+                    {% endif %}
+
+                    <li><a href="{{ url_for('view_income') }}" class="{{ 'active' if 'income' in request.endpoint }}"><i class="fas fa-wallet"></i> &nbsp; Income</a></li>
+                    <li><a href="{{ url_for('view_expenses') }}" class="{{ 'active' if 'expenses' in request.endpoint }}"><i class="fas fa-receipt"></i> &nbsp; Expenses</a></li>
+                    
+                    <hr style="margin: 1rem 0; border: 0.5px solid rgba(255,255,255,0.1)">
+                    
+                    <li><a href="{{ url_for('view_report', type='weekly') }}"><i class="fas fa-chart-line"></i> &nbsp; Weekly Report</a></li>
+                    <li><a href="{{ url_for('view_report', type='monthly') }}"><i class="fas fa-chart-bar"></i> &nbsp; Monthly Report</a></li>
+                    <li><a href="{{ url_for('view_report', type='yearly') }}"><i class="fas fa-chart-pie"></i> &nbsp; Yearly Report</a></li>
+                    
+                    <li style="margin-top: auto;"><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> &nbsp; Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <h1>{{ title if title else 'Dashboard Overview' }}</h1>
+                <div class="user-info">
+                    <span>Welcome, <strong>{{ current_user.username }}</strong> ({{ current_user.role }})</span>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}" style="padding: 1rem; margin-bottom: 1rem; border-radius: 8px; background: {{ '#d4edda' if category == 'success' else '#f8d7da' }}; color: {{ '#155724' if category == 'success' else '#721c24' }};">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        {% block login_content %}{% endblock %}
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script>
+        function togglePassword(id, iconId) {
+            const input = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>
