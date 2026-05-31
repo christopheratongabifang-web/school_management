@@ -47,11 +47,50 @@ class UserForm(FlaskForm):
         if user:
             raise ValidationError('That username is already taken. Please choose a different one.')
 
+class ConfirmForm(FlaskForm):
+    submit = SubmitField('Confirm')
+
 class IncomeForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
-    source = StringField('Source', validators=[DataRequired()])
+    source = SelectField('Source', choices=[
+        ('FEES', 'Fees'),
+        ('PTA', 'P.T.A')
+    ], validators=[DataRequired()])
+    student_name = StringField('Student Name', validators=[Optional()])
+    student_session = SelectField('Session (Anglophone / Francophone)', choices=[], validators=[Optional()])
+    student_class = StringField('Student Class', validators=[Optional()])
+    section = SelectField('Section', choices=[('Anglophone', 'Anglophone'), ('Francophone', 'Francophone')], validators=[Optional()])
+    pta_level = StringField('P.T.A Level / Levy', validators=[Optional()])
     description = TextAreaField('Description')
     submit = SubmitField('Save Income')
+
+    def validate_student_name(self, student_name):
+        if self.source.data == 'FEES' and not (student_name.data and student_name.data.strip()):
+            raise ValidationError('Student name is required for fees income.')
+
+    def validate_student_session(self, student_session):
+        if self.source.data == 'FEES' and not (student_session.data and student_session.data.strip()):
+            raise ValidationError('Session is required for fees income.')
+
+    def validate_student_class(self, student_class):
+        if self.source.data == 'FEES' and not (student_class.data and student_class.data.strip()):
+            raise ValidationError('Student class is required for fees income.')
+
+    def validate_section(self, section):
+        if self.source.data == 'FEES' and not section.data:
+            raise ValidationError('Section is required for fees income.')
+
+    def validate_pta_level(self, pta_level):
+        if self.source.data == 'PTA' and not (pta_level.data and pta_level.data.strip()):
+            raise ValidationError('P.T.A level is required for PTA income.')
+
+class SchoolSettingsForm(FlaskForm):
+    fees_amount = FloatField('Default Fees Amount (FCFA)', validators=[DataRequired(), NumberRange(min=0)])
+    pta_amount = FloatField('Default P.T.A Amount (FCFA)', validators=[DataRequired(), NumberRange(min=0)])
+    sections = TextAreaField('Sections', description='Enter one section per line, for example Anglophone and Francophone.', validators=[DataRequired()])
+    classes = TextAreaField('Classes', description='Enter one school class per line, e.g. Primary 1, Primary 2.', validators=[DataRequired()])
+    section_classes = TextAreaField('Classes by Section', description='Optional: enter one section mapping per line, e.g. Anglophone: Primary 1, Primary 2', validators=[Optional()])
+    submit = SubmitField('Save School Settings')
 
 class ExpenseForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>School Fee Schedule</h2>
+    <a href="{{ url_for('school_settings') }}" class="btn btn-primary"><i class="fas fa-cog"></i> Update School Settings</a>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Section</th>
+                <th>Class</th>
+                <th>School Fees (FCFA)</th>
+                <th>P.T.A Amount (FCFA)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if school_fee_groups %}
+                {% for group in school_fee_groups %}
+                <tr style="background: #f4f6fb; font-weight: 700;">
+                    <td colspan="4">{{ group.section or 'General' }}</td>
+                </tr>
+                {% if group.rows %}
+                    {% for row in group.rows %}
+                    <tr>
+                        <td></td>
+                        <td>{{ row.class or '-' }}</td>
+                        <td>{{ '{:,.0f}'.format(row.fees) }}</td>
+                        <td>{{ '{:,.0f}'.format(row.pta) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="padding-left: 1.5rem; color: var(--gray);">No classes defined for this session.</td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--gray);">No school fee entries found. Please update school settings first.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

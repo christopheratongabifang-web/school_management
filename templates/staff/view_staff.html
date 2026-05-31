@@ -51,8 +51,14 @@
                     <td>{{ staff.academic_year }}</td>
                     {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL'] %}
                     <td>
-                        <a href="{{ url_for('approve_staff', staff_id=staff.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--success);"><i class="fas fa-check"></i> Validate</a>
-                        <a href="{{ url_for('reject_staff', staff_id=staff.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-left: 0.25rem;"><i class="fas fa-times"></i> Reject</a>
+                        <form method="post" action="{{ url_for('approve_staff', staff_id=staff.id) }}" style="display:inline-block; margin:0 0.25rem 0 0;">
+                            {{ confirm_form.hidden_tag() }}
+                            <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--success);"><i class="fas fa-check"></i> Validate</button>
+                        </form>
+                        <form method="post" action="{{ url_for('reject_staff', staff_id=staff.id) }}" style="display:inline-block; margin:0;">
+                            {{ confirm_form.hidden_tag() }}
+                            <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-left: 0.25rem;"><i class="fas fa-times"></i> Reject</button>
+                        </form>
                     </td>
                     {% endif %}
                 </tr>

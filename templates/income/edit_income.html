@@ -2,12 +2,8 @@
 
 {% block content %}
 <div class="form-container">
-    <h2>Record School Income</h2>
-    <p style="color: var(--gray); margin-bottom: 1rem;">Select the income type and include the student class or PTA level information.</p>
-    <p style="color: var(--gray); margin-bottom: 2rem;">
-        Default Fees: {{ "{:,.0f}".format(default_fee_amount) }} FCFA · Default P.T.A Amount: {{ "{:,.0f}".format(default_pta_amount) }} FCFA
-    </p>
-    
+    <h2>Edit Income Record</h2>
+    <p style="color: var(--gray); margin-bottom: 1rem;">Update the income details for the selected student.</p>
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div class="form-group">
@@ -43,7 +39,7 @@
             {{ form.description(class="form-control", rows="3") }}
         </div>
         <div style="margin-top: 2rem;">
-            {{ form.submit(class="btn btn-primary", style="width: 100%") }}
+            {{ form.submit(class="btn btn-primary", style="width: 100%", value='Update Income') }}
         </div>
     </form>
 </div>

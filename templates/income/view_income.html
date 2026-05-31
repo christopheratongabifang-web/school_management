@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h2>Income Records</h2>
+    <h2>Income Records{% if year %} - {{ year }}{% endif %}</h2>
     {% if current_user.role|upper == 'BURSER' %}
     <a href="{{ url_for('add_income') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New</a>
     {% endif %}
@@ -15,7 +15,12 @@
                 <th>Date</th>
                 <th>Source</th>
                 <th>Amount (FCFA)</th>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th>Section</th>
+                <th>P.T.A Level</th>
                 <th>Description</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -24,11 +29,22 @@
                 <td>{{ income.date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ income.source }}</td>
                 <td style="color: var(--success); font-weight: 600;">{{ "{:,.0f}".format(income.amount) }}</td>
+                <td>{{ income.student_name or '-' }}</td>
+                <td>{{ income.student_class or '-' }}</td>
+                <td>{{ income.section or '-' }}</td>
+                <td>{{ income.pta_level or '-' }}</td>
                 <td>{{ income.description }}</td>
+                <td>
+                    {% if current_user.role|upper == 'BURSER' %}
+                    <a href="{{ url_for('edit_income', income_id=income.id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</a>
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--gray);">No income records found.</td>
+                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--gray);">No income records found.</td>
             </tr>
             {% endfor %}
         </tbody>

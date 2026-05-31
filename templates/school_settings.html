@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>School Settings</h2>
+    <p style="color: var(--gray); margin-bottom: 2rem;">Set the default fee and PTA amounts, list school sections, classes, and section-level class mapping.</p>
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label>Default Fees Amount (FCFA)</label>
+            {{ form.fees_amount(class="form-control", placeholder="e.g. 20000") }}
+        </div>
+        <div class="form-group">
+            <label>Default P.T.A Amount (FCFA)</label>
+            {{ form.pta_amount(class="form-control", placeholder="e.g. 5000") }}
+        </div>
+        <div class="form-group">
+            <label>Sections</label>
+            {{ form.sections(class="form-control", rows="3", placeholder="Anglophone\nFrancophone") }}
+        </div>
+        <div class="form-group">
+            <label>Classes</label>
+            {{ form.classes(class="form-control", rows="4", placeholder="Primary 1\nPrimary 2\nSecondary 1") }}
+        </div>
+        <div class="form-group">
+            <label>Classes by Section</label>
+            {{ form.section_classes(class="form-control", rows="4", placeholder="Anglophone: Primary 1, Primary 2\nFrancophone: Primary 1, Primary 2") }}
+        </div>
+        <div style="margin-top: 2rem;">
+            {{ form.submit(class="btn btn-primary", style="width: 100%") }}
+        </div>
+    </form>
+
+    {% if fee_table_rows %}
+    <div class="school-fee-list" style="margin-top: 2rem;">
+        <h3>School Fee Schedule</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Class</th>
+                        <th>School Fees (FCFA)</th>
+                        <th>P.T.A Amount (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in fee_table_rows %}
+                    <tr>
+                        <td>{{ row.section or '-' }}</td>
+                        <td>{{ row.class or '-' }}</td>
+                        <td>{{ '{:,.0f}'.format(row.fees) }}</td>
+                        <td>{{ '{:,.0f}'.format(row.pta) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

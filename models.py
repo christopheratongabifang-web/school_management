@@ -9,8 +9,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(20), nullable=False) # SUPER_ADMIN, PRINCIPAL, BURSER, ACCOUNTANT, SECRETARY
+    password_hash = db.Column(db.String(512), nullable=False)  # Increased to 512 for scrypt hash
+    role = db.Column(db.String(20), nullable=False)  # SUPER_ADMIN, PRINCIPAL, BURSER, ACCOUNTANT, SECRETARY
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -22,9 +22,22 @@ class Income(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
     source = db.Column(db.String(100), nullable=False)
+    student_name = db.Column(db.String(100))
+    student_session = db.Column(db.String(100))  # Anglophone or Francophone
+    student_class = db.Column(db.String(100))
+    section = db.Column(db.String(100))
+    pta_level = db.Column(db.String(100))
     description = db.Column(db.Text)
     date = db.Column(db.DateTime, default=datetime.utcnow)
     added_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class SchoolSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f'<SchoolSetting {self.key}={self.value}>'
 
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,8 +66,8 @@ class Staff(db.Model):
     phone = db.Column(db.String(20))
     academic_year = db.Column(db.String(20), nullable=False)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='APPROVED') # APPROVED, PENDING
-    pending_action = db.Column(db.String(20), default='NONE') # NONE, ADD, EDIT
+    status = db.Column(db.String(20), default='APPROVED')  # APPROVED, PENDING
+    pending_action = db.Column(db.String(20), default='NONE')  # NONE, ADD, EDIT
     pending_changes = db.Column(db.Text)
     added_by = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -101,3 +114,14 @@ class Payroll(db.Model):
     staff_data = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class SystemLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    action = db.Column(db.String(255), nullable=False)
+    module = db.Column(db.String(100), nullable=False)
+    details = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f'<SystemLog {self.action} by user {self.user_id} at {self.timestamp}>'
