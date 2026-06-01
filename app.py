@@ -1,4 +1,5 @@
 from flask import Flask
+<<<<<<< HEAD
 import os
 from config import Config
 from models import db, User
@@ -18,6 +19,22 @@ def ensure_schema_columns(app):
             ('expense', 'approved_principal', 'BOOLEAN', 'FALSE'),
             ('expense', 'approved_burser', 'BOOLEAN', 'FALSE'),
             ('expense', 'approved_accountant', 'BOOLEAN', 'FALSE'),
+=======
+from config import Config
+from models import db, User
+from flask_login import LoginManager
+from routes import register_routes
+
+
+def ensure_schema_columns(app):
+    with app.app_context():
+        conn = db.engine.connect()
+        for table, column, column_type, default in [
+            ('expense', 'status', 'VARCHAR(20)', "'PENDING'"),
+            ('expense', 'approved_principal', 'INTEGER', '0'),
+            ('expense', 'approved_burser', 'INTEGER', '0'),
+            ('expense', 'approved_accountant', 'INTEGER', '0'),
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             ('staff', 'academic_year', 'VARCHAR(20)', "''"),
             ('staff', 'department', 'VARCHAR(100)', "''"),
             ('staff', 'salary_type', 'VARCHAR(20)', "'FIXED'"),
@@ -27,6 +44,7 @@ def ensure_schema_columns(app):
             ('staff', 'hours_per_week', 'INTEGER', '0'),
             ('staff', 'teaching_details', 'TEXT', "'[]'"),
             ('staff', 'pending_action', 'VARCHAR(20)', "'NONE'"),
+<<<<<<< HEAD
             ('staff', 'pending_changes', 'TEXT', "''"),
             ('income', 'student_name', 'VARCHAR(100)', "''"),
             ('income', 'student_class', 'VARCHAR(100)', "''"),
@@ -72,6 +90,18 @@ def ensure_default_school_settings(app):
 
 def ensure_default_staff(app):
     """Initialize default staff entries"""
+=======
+            ('staff', 'pending_changes', 'TEXT', "''")
+        ]:
+            result = conn.exec_driver_sql(f"PRAGMA table_info({table})")
+            columns = [row[1] for row in result]
+            if column not in columns:
+                conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {column_type} DEFAULT {default}")
+        conn.close()
+
+
+def ensure_default_staff(app):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     from models import Staff
     with app.app_context():
         default_entries = [
@@ -125,6 +155,7 @@ def ensure_default_staff(app):
             }
         ]
         for entry in default_entries:
+<<<<<<< HEAD
             try:
                 existing = Staff.query.filter_by(position=entry['position'], status='APPROVED').first()
                 if not existing:
@@ -243,10 +274,31 @@ def fix_username_column(app):
                 print("[SUCCESS] Username column already has correct length")
         except Exception as e:
             print(f"[ERROR] Could not check/fix username column: {e}")
+=======
+            existing = Staff.query.filter_by(position=entry['position'], status='APPROVED').first()
+            if not existing:
+                staff = Staff(
+                    name=entry['name'],
+                    position=entry['position'],
+                    department=entry['department'],
+                    salary_type=entry['salary_type'],
+                    salary=entry['salary'],
+                    hourly_rate=entry['hourly_rate'],
+                    hours_worked_month=entry['hours_worked_month'],
+                    hours_per_week=entry['hours_per_week'],
+                    teaching_details=entry['teaching_details'],
+                    academic_year=entry['academic_year'],
+                    status='APPROVED'
+                )
+                db.session.add(staff)
+        db.session.commit()
+
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+<<<<<<< HEAD
     # Ensure Flask's secret key is set on the app instance so sessions work
     # immediately (avoid RuntimeError about missing secret key).
     app.secret_key = app.config.get('SECRET_KEY')
@@ -254,6 +306,9 @@ def create_app():
         raise RuntimeError('SECRET_KEY must be set in environment for production deployment')
     
     CSRFProtect(app)
+=======
+    
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     db.init_app(app)
     
     login_manager = LoginManager()
@@ -266,16 +321,39 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+<<<<<<< HEAD
         fix_username_column(app)
         ensure_schema_columns(app)
         ensure_default_staff(app)
         ensure_default_school_settings(app)
         ensure_admin_user(app)
 
+=======
+        ensure_schema_columns(app)
+        ensure_default_staff(app)
+        
+        # Seed Super Admin
+        super_admin_email = 'ankandjeu7@gmail.com'
+        if not User.query.filter_by(email=super_admin_email).first():
+            super_admin = User(
+                username='NKANDJEU WILLY',
+                email=super_admin_email,
+                role='SUPER_ADMIN'
+            )
+            super_admin.set_password('Willyarmel')
+            db.session.add(super_admin)
+            db.session.commit()
+            print("Super Admin created successfully.")
+            
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     register_routes(app)
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     app.run(debug=False)
+=======
+    app.run(debug=True)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09

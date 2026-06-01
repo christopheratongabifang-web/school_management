@@ -23,15 +23,21 @@ body {
     background: #f0f2f5;
     color: var(--dark);
     line-height: 1.6;
+<<<<<<< HEAD
     overflow-x: auto;
     width: 100%;
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 }
 
 /* Sidebar Layout */
 .app-container {
     display: flex;
     min-height: 100vh;
+<<<<<<< HEAD
     width: 100%;
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 }
 
 .sidebar {
@@ -54,9 +60,12 @@ body {
 
 .nav-links {
     list-style: none;
+<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     height: calc(100vh - 120px);
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 }
 
 .nav-links li {
@@ -78,6 +87,7 @@ body {
     color: white;
 }
 
+<<<<<<< HEAD
 .nav-links button {
     color: #adb5bd;
     padding: 0.8rem 1rem;
@@ -121,6 +131,13 @@ body {
     padding: 2rem;
     min-width: 0;
     width: calc(100% - 280px);
+=======
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 2rem;
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 }
 
 /* Dashboard Cards */

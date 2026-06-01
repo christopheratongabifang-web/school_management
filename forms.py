@@ -47,6 +47,7 @@ class UserForm(FlaskForm):
         if user:
             raise ValidationError('That username is already taken. Please choose a different one.')
 
+<<<<<<< HEAD
 class ConfirmForm(FlaskForm):
     submit = SubmitField('Confirm')
 
@@ -92,6 +93,14 @@ class SchoolSettingsForm(FlaskForm):
     section_classes = TextAreaField('Classes by Section', description='Optional: enter one section mapping per line, e.g. Anglophone: Primary 1, Primary 2', validators=[Optional()])
     submit = SubmitField('Save School Settings')
 
+=======
+class IncomeForm(FlaskForm):
+    amount = FloatField('Amount', validators=[DataRequired()])
+    source = StringField('Source', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save Income')
+
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 class ExpenseForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     category = SelectField('Category', choices=[

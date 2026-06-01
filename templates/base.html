@@ -19,8 +19,11 @@
                     <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}"><i class="fas fa-home"></i> &nbsp; Dashboard</a></li>
                     
                     {% if current_user.role == 'SUPER_ADMIN' %}
+<<<<<<< HEAD
                     <li><a href="{{ url_for('view_system_logs') }}" class="{{ 'active' if request.endpoint == 'view_system_logs' }}"><i class="fas fa-history"></i> &nbsp; System Logs</a></li>
                     <li><a href="{{ url_for('school_settings') }}" class="{{ 'active' if request.endpoint == 'school_settings' }}"><i class="fas fa-cog"></i> &nbsp; School Settings</a></li>
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
                     <li><a href="{{ url_for('add_user') }}" class="{{ 'active' if request.endpoint == 'add_user' }}"><i class="fas fa-user-plus"></i> &nbsp; Add Management</a></li>
                     {% endif %}
 
@@ -37,6 +40,7 @@
                     <li><a href="{{ url_for('view_report', type='monthly') }}"><i class="fas fa-chart-bar"></i> &nbsp; Monthly Report</a></li>
                     <li><a href="{{ url_for('view_report', type='yearly') }}"><i class="fas fa-chart-pie"></i> &nbsp; Yearly Report</a></li>
                     
+<<<<<<< HEAD
                     <li style="margin-top: auto;">
                         <form method="post" action="{{ url_for('logout') }}" style="margin: 0; width: 100%;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -45,6 +49,9 @@
                             </button>
                         </form>
                     </li>
+=======
+                    <li style="margin-top: auto;"><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> &nbsp; Logout</a></li>
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
                 </ul>
             </nav>
         </aside>
@@ -53,9 +60,12 @@
             <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                 <h1>{{ title if title else 'Dashboard Overview' }}</h1>
                 <div class="user-info">
+<<<<<<< HEAD
                     {% if current_user.role|upper == 'SUPER_ADMIN' and active_section %}
                     <span style="margin-right: 1rem; padding: 0.5rem 1rem; background: #e9ecef; border-radius: 6px;">Section: <strong>{{ active_section }}</strong></span>
                     {% endif %}
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
                     <span>Welcome, <strong>{{ current_user.username }}</strong> ({{ current_user.role }})</span>
                 </div>
             </header>

@@ -1,14 +1,23 @@
+<<<<<<< HEAD
 from flask import render_template, url_for, flash, redirect, request, send_file, session, abort, jsonify
 import os
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import or_, func
 from models import db, User, Income, Expense, Staff, Budget, Payroll, SchoolSetting, SystemLog
 from forms import LoginForm, UserForm, IncomeForm, ExpenseForm, StaffForm, BudgetForm, ResetPasswordForm, NewPasswordForm, PayrollForm, SchoolSettingsForm, ConfirmForm
+=======
+from flask import render_template, url_for, flash, redirect, request, send_file
+from flask_login import login_user, current_user, logout_user, login_required
+from sqlalchemy import or_
+from models import db, User, Income, Expense, Staff, Budget, Payroll
+from forms import LoginForm, UserForm, IncomeForm, ExpenseForm, StaffForm, BudgetForm, ResetPasswordForm, NewPasswordForm, PayrollForm
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 from datetime import datetime, timedelta
 import pandas as pd
 import io
 import json
 
+<<<<<<< HEAD
 def get_school_setting(key, default=None):
     setting = SchoolSetting.query.filter_by(key=key).first()
     return setting.value if setting else default
@@ -130,6 +139,9 @@ def register_routes(app):
         flash(f'Active section changed to {section}.', 'info')
         return redirect(url_for('dashboard'))
 
+=======
+def register_routes(app):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     @app.route('/')
     @app.route('/dashboard')
     @login_required
@@ -182,11 +194,15 @@ def register_routes(app):
             ).order_by(Staff.date_joined.desc()).all()
         pending_expenses = []
         approved_expenses = []
+<<<<<<< HEAD
         confirm_form = ConfirmForm()
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         if role in ['PRINCIPAL', 'BURSER', 'ACCOUNTANT']:
             pending_expenses = Expense.query.filter_by(status='PENDING').order_by(Expense.date.desc()).all()
         if role in ['SUPER_ADMIN', 'PRINCIPAL', 'BURSER', 'ACCOUNTANT']:
             approved_expenses = Expense.query.filter_by(status='APPROVED').order_by(Expense.date.desc()).all()
+<<<<<<< HEAD
 
         school_fee_amount = float(get_school_setting('fee_amount', '0') or 0)
         school_pta_amount = float(get_school_setting('pta_amount', '0') or 0)
@@ -197,6 +213,8 @@ def register_routes(app):
         available_sections = [s.strip() for s in school_sections.replace(',', '\n').splitlines() if s.strip()]
         active_section = session.get('active_section', available_sections[0] if available_sections else None) if role == 'SUPER_ADMIN' else None
 
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         return render_template('dashboard.html', 
                              total_income=total_income, 
                              total_expenses=total_expenses, 
@@ -216,6 +234,7 @@ def register_routes(app):
                              month_names=month_names,
                              payroll_record=payroll_record,
                              payroll_rows=payroll_rows,
+<<<<<<< HEAD
                              allow_edit_payroll=allow_edit_payroll,
                              school_fee_amount=school_fee_amount,
                              school_pta_amount=school_pta_amount,
@@ -225,6 +244,9 @@ def register_routes(app):
                              available_sections=available_sections,
                              active_section=active_section,
                              confirm_form=confirm_form)
+=======
+                             allow_edit_payroll=allow_edit_payroll)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -232,6 +254,7 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
         form = LoginForm()
         if form.validate_on_submit():
+<<<<<<< HEAD
             identifier = (form.email.data or '').strip().lower()
             user = User.query.filter(
                 or_(func.lower(User.email) == identifier,
@@ -318,6 +341,17 @@ def register_routes(app):
 
     @app.route('/logout', methods=['POST'])
     @login_required
+=======
+            user = User.query.filter_by(email=form.email.data).first()
+            if user and user.check_password(form.password.data):
+                login_user(user)
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Login Unsuccessful. Please check email and password', 'danger')
+        return render_template('login.html', title='Login', form=form)
+
+    @app.route('/logout')
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     def logout():
         logout_user()
         return redirect(url_for('login'))
@@ -339,11 +373,18 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
         form = UserForm()
         if form.validate_on_submit():
+<<<<<<< HEAD
             user = User(username=form.username.data.strip(), email=form.email.data.strip().lower(), role=form.role.data)
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
             log_activity(current_user.id, 'CREATE_USER', 'USER_MGMT', f'Created user {user.username} with role {user.role}')
+=======
+            user = User(username=form.username.data, email=form.email.data, role=form.role.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             flash(f'User {user.username} added successfully!', 'success')
             return redirect(url_for('dashboard'))
         return render_template('add_user.html', form=form)
@@ -356,6 +397,7 @@ def register_routes(app):
         if role != 'BURSER':
             flash('Access Denied', 'danger')
             return redirect(url_for('dashboard'))
+<<<<<<< HEAD
 
         form = IncomeForm()
         
@@ -455,11 +497,23 @@ def register_routes(app):
         school_fee_groups = group_fee_rows_by_section(school_section_classes, school_sections, school_classes, school_fee_amount, school_pta_amount)
 
         return render_template('school_fees.html', school_fee_groups=school_fee_groups)
+=======
+        form = IncomeForm()
+        if form.validate_on_submit():
+            income = Income(amount=form.amount.data, source=form.source.data, 
+                           description=form.description.data, added_by=current_user.id)
+            db.session.add(income)
+            db.session.commit()
+            flash('Income added!', 'success')
+            return redirect(url_for('view_income'))
+        return render_template('income/add_income.html', form=form)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
     @app.route('/income/view')
     @login_required
     def view_income():
         role = (current_user.role or '').upper()
+<<<<<<< HEAD
         if role not in ['SUPER_ADMIN', 'PRINCIPAL', 'BURSER', 'ACCOUNTANT']:
             flash('Access Denied', 'danger')
             return redirect(url_for('dashboard'))
@@ -507,6 +561,13 @@ def register_routes(app):
             return redirect(url_for('view_income'))
 
         return render_template('income/edit_income.html', form=form, income=income)
+=======
+        if role not in ['SUPER_ADMIN', 'PRINCIPAL', 'BURSER']:
+            flash('Access Denied', 'danger')
+            return redirect(url_for('dashboard'))
+        incomes = Income.query.order_by(Income.date.desc()).all()
+        return render_template('income/view_income.html', incomes=incomes)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
     # Expense Management
     @app.route('/expenses/add', methods=['GET', 'POST'])
@@ -530,7 +591,10 @@ def register_routes(app):
             )
             db.session.add(expense)
             db.session.commit()
+<<<<<<< HEAD
             log_activity(current_user.id, 'ADD_EXPENSE', 'FINANCE', f'{form.category.data} - {form.amount.data} FCFA')
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             flash('Expense submitted and waiting for final approval.', 'info')
             return redirect(url_for('view_expenses'))
         return render_template('expenses/add_expense.html', form=form)
@@ -610,6 +674,7 @@ def register_routes(app):
             flash('Access Denied', 'danger')
             return redirect(url_for('dashboard'))
         expenses = Expense.query.filter(Expense.status != 'REJECTED').order_by(Expense.date.desc()).all()
+<<<<<<< HEAD
         confirm_form = ConfirmForm()
         return render_template('expenses/view_expenses.html', expenses=expenses, confirm_form=confirm_form)
 
@@ -621,6 +686,13 @@ def register_routes(app):
             flash('Invalid request.', 'danger')
             return redirect(url_for('view_expenses'))
 
+=======
+        return render_template('expenses/view_expenses.html', expenses=expenses)
+
+    @app.route('/expenses/approve/<int:expense_id>')
+    @login_required
+    def approve_expense(expense_id):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         role = (current_user.role or '').upper()
         if role not in ['PRINCIPAL', 'BURSER', 'ACCOUNTANT']:
             flash('Access Denied', 'danger')
@@ -637,14 +709,20 @@ def register_routes(app):
             expense.approved_accountant = True
         if expense.approved_principal and expense.approved_burser and expense.approved_accountant:
             expense.status = 'APPROVED'
+<<<<<<< HEAD
             log_activity(current_user.id, 'APPROVE_EXPENSE', 'FINANCE', f'Expense ID {expense_id} ({expense.category}) - {expense.amount} FCFA FULLY APPROVED')
             flash('Expense is now fully approved and will be recorded.', 'success')
         else:
             log_activity(current_user.id, 'APPROVE_EXPENSE', 'FINANCE', f'Expense ID {expense_id} ({expense.category}) - {expense.amount} FCFA approved by {role}')
+=======
+            flash('Expense is now fully approved and will be recorded.', 'success')
+        else:
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             flash('Your approval has been recorded. Waiting for other approvers.', 'info')
         db.session.commit()
         return redirect(url_for('view_expenses'))
 
+<<<<<<< HEAD
     @app.route('/expenses/reject/<int:expense_id>', methods=['POST'])
     @login_required
     def reject_expense(expense_id):
@@ -653,6 +731,11 @@ def register_routes(app):
             flash('Invalid request.', 'danger')
             return redirect(url_for('view_expenses'))
 
+=======
+    @app.route('/expenses/reject/<int:expense_id>')
+    @login_required
+    def reject_expense(expense_id):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         role = (current_user.role or '').upper()
         if role not in ['PRINCIPAL', 'BURSER', 'ACCOUNTANT']:
             flash('Access Denied', 'danger')
@@ -663,7 +746,10 @@ def register_routes(app):
             return redirect(url_for('view_expenses'))
         expense.status = 'REJECTED'
         db.session.commit()
+<<<<<<< HEAD
         log_activity(current_user.id, 'REJECT_EXPENSE', 'FINANCE', f'Expense ID {expense_id} ({expense.category}) - {expense.amount} FCFA rejected')
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         flash('Expense has been rejected and will not be spent.', 'warning')
         return redirect(url_for('view_expenses'))
 
@@ -791,6 +877,7 @@ def register_routes(app):
                 Staff.added_by == current_user.id,
                 or_(Staff.status == 'PENDING', Staff.pending_action == 'EDIT')
             ).order_by(Staff.date_joined.desc()).all()
+<<<<<<< HEAD
         confirm_form = ConfirmForm()
         return render_template('staff/view_staff.html', 
                              staff_members=staff_members, 
@@ -805,6 +892,15 @@ def register_routes(app):
             flash('Invalid request.', 'danger')
             return redirect(url_for('view_staff'))
 
+=======
+        return render_template('staff/view_staff.html', 
+                             staff_members=staff_members, 
+                             pending_staff=pending_staff)
+
+    @app.route('/staff/approve/<int:staff_id>')
+    @login_required
+    def approve_staff(staff_id):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         role = (current_user.role or '').upper()
         if role not in ['SUPER_ADMIN', 'PRINCIPAL']:
             flash('Access Denied', 'danger')
@@ -819,6 +915,7 @@ def register_routes(app):
         if staff.status == 'PENDING':
             staff.status = 'APPROVED'
         db.session.commit()
+<<<<<<< HEAD
         log_activity(current_user.id, 'APPROVE_STAFF', 'STAFF', f'Staff member {staff.name} ({staff.position}) approved')
         flash(f'Staff member {staff.name} has been approved.', 'success')
         return redirect(url_for('dashboard'))
@@ -831,6 +928,14 @@ def register_routes(app):
             flash('Invalid request.', 'danger')
             return redirect(url_for('view_staff'))
 
+=======
+        flash(f'Staff member {staff.name} has been approved.', 'success')
+        return redirect(url_for('dashboard'))
+
+    @app.route('/staff/reject/<int:staff_id>')
+    @login_required
+    def reject_staff(staff_id):
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         role = (current_user.role or '').upper()
         if role not in ['SUPER_ADMIN', 'PRINCIPAL']:
             flash('Access Denied', 'danger')
@@ -840,13 +945,19 @@ def register_routes(app):
             staff.pending_action = 'NONE'
             staff.pending_changes = None
             db.session.commit()
+<<<<<<< HEAD
             log_activity(current_user.id, 'REJECT_STAFF', 'STAFF', f'Pending changes for {staff.name} rejected')
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             flash(f'Pending changes for {staff.name} have been rejected.', 'warning')
             return redirect(url_for('dashboard'))
         if staff.status == 'PENDING':
             db.session.delete(staff)
             db.session.commit()
+<<<<<<< HEAD
             log_activity(current_user.id, 'REJECT_STAFF', 'STAFF', f'Staff member {staff.name} ({staff.position}) rejected and removed')
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             flash(f'Staff member {staff.name} has been rejected and removed.', 'warning')
             return redirect(url_for('dashboard'))
         flash('This staff request cannot be rejected.', 'warning')
@@ -857,6 +968,7 @@ def register_routes(app):
     @login_required
     def view_report(type):
         if type == 'weekly':
+<<<<<<< HEAD
             template_name = 'reports/weekly_report.html'
             start_date = datetime.utcnow() - timedelta(days=7)
         elif type == 'monthly':
@@ -867,11 +979,22 @@ def register_routes(app):
             start_date = datetime.utcnow() - timedelta(days=365)
         else:
             abort(404)
+=======
+            start_date = datetime.utcnow() - timedelta(days=7)
+        elif type == 'monthly':
+            start_date = datetime.utcnow() - timedelta(days=30)
+        else: # yearly
+            start_date = datetime.utcnow() - timedelta(days=365)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             
         incomes = Income.query.filter(Income.date >= start_date).all()
         expenses = Expense.query.filter(Expense.date >= start_date).all()
         
+<<<<<<< HEAD
         return render_template(template_name, incomes=incomes, expenses=expenses)
+=======
+        return render_template(f'reports/{type}_report.html', incomes=incomes, expenses=expenses)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
     @app.route('/export/<type>')
     @login_required
@@ -880,10 +1003,15 @@ def register_routes(app):
             start_date = datetime.utcnow() - timedelta(days=7)
         elif type == 'monthly':
             start_date = datetime.utcnow() - timedelta(days=30)
+<<<<<<< HEAD
         elif type == 'yearly':
             start_date = datetime.utcnow() - timedelta(days=365)
         else:
             abort(404)
+=======
+        else: # yearly
+            start_date = datetime.utcnow() - timedelta(days=365)
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 
         incomes = Income.query.filter(Income.date >= start_date).all()
         expenses = Expense.query.filter(Expense.date >= start_date).all()
@@ -909,6 +1037,7 @@ def register_routes(app):
         
         output.seek(0)
         return send_file(output, as_attachment=True, download_name=f'school_report_{type}.xlsx')
+<<<<<<< HEAD
 
     @app.route('/system-logs')
     @login_required
@@ -921,3 +1050,5 @@ def register_routes(app):
         per_page = 50
         logs = SystemLog.query.order_by(SystemLog.timestamp.desc()).paginate(page=page, per_page=per_page)
         return render_template('system_logs.html', logs=logs)
+=======
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09

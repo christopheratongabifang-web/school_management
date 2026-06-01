@@ -1,4 +1,5 @@
 import os
+<<<<<<< HEAD
 from datetime import timedelta
 from pathlib import Path
 
@@ -48,3 +49,10 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=int(os.environ.get('SESSION_LIFETIME_MINUTES', '60')))
     SESSION_PROTECTION = 'strong'
+=======
+
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'school-expense-tracker-secret-key-12345'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///database.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+>>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
