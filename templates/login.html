@@ -18,6 +18,9 @@
 
         <form method="POST" action="">
             {{ form.hidden_tag() }}
+            {% if next_page %}
+                <input type="hidden" name="next" value="{{ next_page }}">
+            {% endif %}
             <div class="form-group">
                 <label>Email Address</label>
                 {{ form.email(class="form-control", placeholder="name@example.com") }}

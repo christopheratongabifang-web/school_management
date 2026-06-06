@@ -1,48 +1,81 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h2>School Fee Schedule</h2>
-    <a href="{{ url_for('school_settings') }}" class="btn btn-primary"><i class="fas fa-cog"></i> Update School Settings</a>
+<div class="page-header" style="max-width: 1120px; margin: 2rem auto 0; padding: 0 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+    <div>
+        <h2>School Fees</h2>
+        <p class="page-copy">Browse the tuition and PTA levies set by the Super Admin for each session and class.</p>
+    </div>
+    {% if current_user.role == 'SUPER_ADMIN' %}
+    <a href="{{ url_for('school_fee_sessions') }}" class="btn btn-secondary">Manage Fee Sessions</a>
+    {% endif %}
 </div>
 
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Section</th>
-                <th>Class</th>
-                <th>School Fees (FCFA)</th>
-                <th>P.T.A Amount (FCFA)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if school_fee_groups %}
-                {% for group in school_fee_groups %}
-                <tr style="background: #f4f6fb; font-weight: 700;">
-                    <td colspan="4">{{ group.section or 'General' }}</td>
-                </tr>
-                {% if group.rows %}
-                    {% for row in group.rows %}
-                    <tr>
-                        <td></td>
-                        <td>{{ row.class or '-' }}</td>
-                        <td>{{ '{:,.0f}'.format(row.fees) }}</td>
-                        <td>{{ '{:,.0f}'.format(row.pta) }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" style="padding-left: 1.5rem; color: var(--gray);">No classes defined for this session.</td>
-                    </tr>
-                {% endif %}
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--gray);">No school fee entries found. Please update school settings first.</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
+{% if not fees %}
+<div class="card" style="max-width: 1120px; margin: 1.5rem auto; padding: 1.5rem; background: #fff7e6; color: var(--gray);">
+    No school fee structure has been configured yet. Please contact the Super Admin to add session fee details.
 </div>
+{% else %}
+<div class="fee-tabs" style="max-width: 1120px; margin: 1.5rem auto 0; padding: 0 1rem;">
+    <button type="button" class="fee-tab active" data-filter="all">All Sessions</button>
+    {% for session in sessions %}
+    <button type="button" class="fee-tab" data-filter="{{ session }}">{{ session }}</button>
+    {% endfor %}
+</div>
+
+<div class="fee-grid" style="max-width: 1120px; margin: 1rem auto; padding: 0 1rem; display: grid; gap: 1.5rem;">
+    {% for session in sessions %}
+    <div class="fee-session-card" data-session="{{ session }}">
+        <div style="display:flex; align-items:center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <h3>{{ session }} Session</h3>
+            <span class="badge" style="background: rgba(67,97,238,0.1); color: var(--primary); padding: 0.5rem 0.75rem; border-radius: 999px; font-weight: 700;">{{ fees | selectattr('session_type', 'equalto', session) | list | length }} Classes</span>
+        </div>
+        <div class="table-container" style="margin-top: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Tuition Fee (FCFA)</th>
+                        <th>PTA Levy (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set session_fees = fees | selectattr('session_type', 'equalto', session) | list %}
+                    {% if session_fees %}
+                        {% for fee in session_fees %}
+                        <tr>
+                            <td>{{ fee.class_name }}</td>
+                            <td>{{ "{:,.0f}".format(fee.fee_amount) }}</td>
+                            <td>{{ "{:,.0f}".format(fee.pta_amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 1rem; color: var(--gray);">No classes defined for this session yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+const tabs = document.querySelectorAll('.fee-tab');
+const cards = document.querySelectorAll('.fee-session-card');
+
+function setActiveTab(selected) {
+    tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.filter === selected));
+    cards.forEach(card => {
+        const matches = selected === 'all' || card.dataset.session === selected;
+        card.style.display = matches ? 'block' : 'none';
+    });
+}
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => setActiveTab(tab.dataset.filter));
+});
+</script>
+{% endif %}
 {% endblock %}

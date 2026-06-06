@@ -1,31 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<<<<<<< HEAD
-{% if current_user.role|upper == 'SUPER_ADMIN' and available_sections %}
-<div style="margin-bottom: 2rem; padding: 1rem; background: #f0f4f8; border-radius: 8px; display: flex; align-items: center; gap: 1rem;">
-    <strong>Active Section:</strong>
-    <div style="display: flex; gap: 0.5rem;">
-        {% for section in available_sections %}
-        <form method="post" action="{{ url_for('set_section') }}" style="display: inline-block; margin: 0;">
-            <input type="hidden" name="section" value="{{ section }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn" 
-               style="background: {{ '#007bff' if section == active_section else '#e9ecef' }}; 
-                       color: {{ '#fff' if section == active_section else '#333' }}; 
-                       padding: 0.5rem 1rem; 
-                       border-radius: 6px; 
-                       cursor: pointer; border: none;">
-                {{ section }}
-            </button>
-        </form>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-=======
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 <div class="stats-grid">
     <div class="card">
         <h3>Total Income</h3>
@@ -44,17 +19,6 @@
         <div class="value">{{ staff_count }}</div>
     </div>
 </div>
-
-<<<<<<< HEAD
-{% if current_user.role|upper == 'SUPER_ADMIN' %}
-<div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-    <a href="{{ url_for('school_fees') }}" class="btn btn-primary">School Fees</a>
-    <a href="{{ url_for('school_settings') }}" class="btn btn-secondary">School Fee Settings</a>
-</div>
-{% endif %}
-
-=======
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL'] and pending_staff %}
 <div class="pending-card" style="margin-top: 2rem; padding: 1.5rem; background: #fff7e6; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
     <h3 style="margin-bottom: 1rem; color: var(--warning);">Pending Staff Approvals</h3>
@@ -79,19 +43,8 @@
                     <td>{% if staff.salary_type == 'HOURLY' %}-{% else %}{{ "{:,.0f}".format(staff.salary) }}{% endif %}</td>
                     <td>{{ staff.academic_year }}</td>
                     <td style="display: flex; gap: 0.5rem;">
-<<<<<<< HEAD
-                        <form method="post" action="{{ url_for('approve_staff', staff_id=staff.id) }}" style="margin: 0;">
-                            {{ confirm_form.hidden_tag() }}
-                            <button type="submit" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</button>
-                        </form>
-                        <form method="post" action="{{ url_for('reject_staff', staff_id=staff.id) }}" style="margin: 0;">
-                            {{ confirm_form.hidden_tag() }}
-                            <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</button>
-                        </form>
-=======
                         <a href="{{ url_for('approve_staff', staff_id=staff.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</a>
                         <a href="{{ url_for('reject_staff', staff_id=staff.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</a>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
                     </td>
                 </tr>
                 {% endfor %}
@@ -122,12 +75,15 @@
     {% if current_user.role|upper in ['SECRETARY', 'SUPER_ADMIN', 'PRINCIPAL', 'ACCOUNTANT'] %}
     <a href="{{ url_for('dashboard', show_payroll=1) }}" class="btn btn-primary" style="background: var(--success);"><i class="fas fa-file-invoice-dollar"></i> Payroll</a>
     {% endif %}
-<<<<<<< HEAD
+    {% if current_user.role|upper == 'SUPER_ADMIN' %}
+    <a href="{{ url_for('school_fee_sessions') }}" class="btn btn-secondary" style="background: #5d5fe8; color: white;"><i class="fas fa-chalkboard-teacher"></i> Manage Fee Sessions</a>
+    {% endif %}
+    {% if has_school_fees %}
+    <a href="{{ url_for('view_school_fees') }}" class="btn btn-secondary" style="background: #17a2b8; color: white;"><i class="fas fa-money-bill-wave"></i> School Fees</a>
+    {% endif %}
     {% if current_user.role|upper in ['SUPER_ADMIN', 'PRINCIPAL', 'BURSER', 'ACCOUNTANT'] %}
     <a href="{{ url_for('view_income') }}" class="btn btn-secondary" style="background: var(--info);"><i class="fas fa-wallet"></i> Income</a>
     {% endif %}
-=======
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     <a href="{{ url_for('view_staff') }}" class="btn btn-secondary"><i class="fas fa-users"></i> View Staff</a>
 </div>
 
@@ -318,19 +274,8 @@
                         A: {{ '✔' if expense.approved_accountant else '✗' }}
                     </td>
                     <td style="display: flex; gap: 0.5rem;">
-<<<<<<< HEAD
-                        <form method="post" action="{{ url_for('approve_expense', expense_id=expense.id) }}" style="display:inline-block; margin:0 0.25rem 0 0;">
-                            {{ confirm_form.hidden_tag() }}
-                            <button type="submit" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</button>
-                        </form>
-                        <form method="post" action="{{ url_for('reject_expense', expense_id=expense.id) }}" style="display:inline-block; margin:0;">
-                            {{ confirm_form.hidden_tag() }}
-                            <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</button>
-                        </form>
-=======
                         <a href="{{ url_for('approve_expense', expense_id=expense.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Approve</a>
                         <a href="{{ url_for('reject_expense', expense_id=expense.id) }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Reject</a>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
                     </td>
                 </tr>
                 {% endfor %}

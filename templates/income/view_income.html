@@ -2,11 +2,7 @@
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-<<<<<<< HEAD
-    <h2>Income Records{% if year %} - {{ year }}{% endif %}</h2>
-=======
     <h2>Income Records</h2>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
     {% if current_user.role|upper == 'BURSER' %}
     <a href="{{ url_for('add_income') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New</a>
     {% endif %}
@@ -19,16 +15,12 @@
                 <th>Date</th>
                 <th>Source</th>
                 <th>Amount (FCFA)</th>
-<<<<<<< HEAD
                 <th>Student Name</th>
                 <th>Class</th>
                 <th>Section</th>
                 <th>P.T.A Level</th>
                 <th>Description</th>
                 <th>Action</th>
-=======
-                <th>Description</th>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             </tr>
         </thead>
         <tbody>
@@ -37,7 +29,6 @@
                 <td>{{ income.date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ income.source }}</td>
                 <td style="color: var(--success); font-weight: 600;">{{ "{:,.0f}".format(income.amount) }}</td>
-<<<<<<< HEAD
                 <td>{{ income.student_name or '-' }}</td>
                 <td>{{ income.student_class or '-' }}</td>
                 <td>{{ income.section or '-' }}</td>
@@ -54,13 +45,6 @@
             {% else %}
             <tr>
                 <td colspan="9" style="text-align: center; padding: 2rem; color: var(--gray);">No income records found.</td>
-=======
-                <td>{{ income.description }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--gray);">No income records found.</td>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             </tr>
             {% endfor %}
         </tbody>

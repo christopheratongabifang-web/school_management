@@ -1,7 +1,15 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, FloatField, IntegerField, SelectField, TextAreaField, HiddenField, DateField
-from wtforms.validators import DataRequired, Email, Length, ValidationError, EqualTo, NumberRange, Optional
+from wtforms.validators import DataRequired, Length, ValidationError, EqualTo, NumberRange, Optional
 import re
+
+email_pattern = re.compile(r'.+@.+\..+')
+
+def safe_email_check(form, field):
+    if field.data:
+        value = field.data.strip()
+        if not email_pattern.match(value):
+            raise ValidationError('Invalid email address.')
 
 def password_check(form, field):
     if len(field.data) < 6:
@@ -10,12 +18,12 @@ def password_check(form, field):
         raise ValidationError('Password must contain at least one uppercase letter.')
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email or Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
 class ResetPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), safe_email_check])
     submit = SubmitField('Request Password Reset')
 
 class NewPasswordForm(FlaskForm):
@@ -25,7 +33,7 @@ class NewPasswordForm(FlaskForm):
 
 class UserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), safe_email_check])
     password = PasswordField('Password', validators=[DataRequired(), password_check])
     role = SelectField('Role', choices=[
         ('PRINCIPAL', 'Principal'),
@@ -47,10 +55,6 @@ class UserForm(FlaskForm):
         if user:
             raise ValidationError('That username is already taken. Please choose a different one.')
 
-<<<<<<< HEAD
-class ConfirmForm(FlaskForm):
-    submit = SubmitField('Confirm')
-
 class IncomeForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     source = SelectField('Source', choices=[
@@ -58,9 +62,19 @@ class IncomeForm(FlaskForm):
         ('PTA', 'P.T.A')
     ], validators=[DataRequired()])
     student_name = StringField('Student Name', validators=[Optional()])
-    student_session = SelectField('Session (Anglophone / Francophone)', choices=[], validators=[Optional()])
+    student_session = SelectField('Session', choices=[
+        ('', 'Select Session'),
+        ('Anglophone', 'Anglophone'),
+        ('Francophone', 'Francophone'),
+        ('Technical', 'Technical')
+    ], validators=[Optional()])
     student_class = StringField('Student Class', validators=[Optional()])
-    section = SelectField('Section', choices=[('Anglophone', 'Anglophone'), ('Francophone', 'Francophone')], validators=[Optional()])
+    section = SelectField('Section', choices=[
+        ('', 'Select Section'),
+        ('Anglophone', 'Anglophone'),
+        ('Francophone', 'Francophone'),
+        ('Technical', 'Technical')
+    ], validators=[Optional()])
     pta_level = StringField('P.T.A Level / Levy', validators=[Optional()])
     description = TextAreaField('Description')
     submit = SubmitField('Save Income')
@@ -70,7 +84,7 @@ class IncomeForm(FlaskForm):
             raise ValidationError('Student name is required for fees income.')
 
     def validate_student_session(self, student_session):
-        if self.source.data == 'FEES' and not (student_session.data and student_session.data.strip()):
+        if self.source.data == 'FEES' and not student_session.data:
             raise ValidationError('Session is required for fees income.')
 
     def validate_student_class(self, student_class):
@@ -85,22 +99,6 @@ class IncomeForm(FlaskForm):
         if self.source.data == 'PTA' and not (pta_level.data and pta_level.data.strip()):
             raise ValidationError('P.T.A level is required for PTA income.')
 
-class SchoolSettingsForm(FlaskForm):
-    fees_amount = FloatField('Default Fees Amount (FCFA)', validators=[DataRequired(), NumberRange(min=0)])
-    pta_amount = FloatField('Default P.T.A Amount (FCFA)', validators=[DataRequired(), NumberRange(min=0)])
-    sections = TextAreaField('Sections', description='Enter one section per line, for example Anglophone and Francophone.', validators=[DataRequired()])
-    classes = TextAreaField('Classes', description='Enter one school class per line, e.g. Primary 1, Primary 2.', validators=[DataRequired()])
-    section_classes = TextAreaField('Classes by Section', description='Optional: enter one section mapping per line, e.g. Anglophone: Primary 1, Primary 2', validators=[Optional()])
-    submit = SubmitField('Save School Settings')
-
-=======
-class IncomeForm(FlaskForm):
-    amount = FloatField('Amount', validators=[DataRequired()])
-    source = StringField('Source', validators=[DataRequired()])
-    description = TextAreaField('Description')
-    submit = SubmitField('Save Income')
-
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
 class ExpenseForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     category = SelectField('Category', choices=[
@@ -126,7 +124,7 @@ class StaffForm(FlaskForm):
     hourly_rate = FloatField('Hourly Rate (FCFA per hour)', default=0.0, validators=[Optional()])
     hours_per_week = IntegerField('Hours per Week', validators=[DataRequired(), NumberRange(min=0)])
     teaching_details = TextAreaField('Teaching Details', description='JSON format: [{"class": "Class1", "subject": "Math", "periods": 10}, ...]')
-    email = StringField('Email')
+    email = StringField('Email', validators=[Optional(), safe_email_check])
     phone = StringField('Phone')
     academic_year = StringField('Academic Year', validators=[DataRequired()])
     submit = SubmitField('Add Staff')
@@ -159,6 +157,12 @@ class StaffForm(FlaskForm):
             staff = Staff.query.filter_by(email=email.data).first()
             if staff and getattr(self, 'existing_email', None) != email.data:
                 raise ValidationError('That email is already in use for another staff member.')
+
+class SchoolFeeForm(FlaskForm):
+    class_name = StringField('Class Name', validators=[DataRequired()])
+    fee_amount = FloatField('Tuition Fee (FCFA)', validators=[DataRequired()])
+    pta_amount = FloatField('PTA Levy (FCFA)', validators=[DataRequired()])
+    submit = SubmitField('Add Fee Line')
 
 class PayrollForm(FlaskForm):
     month = SelectField('Month', choices=[(i, str(i)) for i in range(1, 13)], coerce=int, validators=[DataRequired()])

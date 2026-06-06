@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header" style="max-width: 1120px; margin: 2rem auto 0; padding: 0 1rem;">
+    <div>
+        <h2>{{ session_type }} Session Fees</h2>
+        <p class="page-copy">Add available classes for the {{ session_type }} session and set the tuition fee plus PTA levy for each student.</p>
+    </div>
+    <div class="action-group">
+        <a href="{{ url_for('school_fee_sessions') }}" class="btn btn-secondary">Back to Sessions</a>
+        <a href="{{ url_for('view_school_fees') }}" class="btn btn-secondary" style="background: #17a2b8; color: white;">View Fees Publicly</a>
+    </div>
+</div>
+
+<div class="fee-summary-grid" style="max-width: 1120px; margin: 1.5rem auto 0; padding: 0 1rem;">
+    <div class="summary-box">
+        <span>Total Classes</span>
+        <strong id="fee-count">{{ fees|length }}</strong>
+    </div>
+    <div class="summary-box">
+        <span>Total Tuition</span>
+        <strong id="fee-total">0</strong>
+    </div>
+    <div class="summary-box">
+        <span>Total PTA Levy</span>
+        <strong id="pta-total">0</strong>
+    </div>
+</div>
+
+<div class="manage-grid" style="max-width: 1120px; margin: 1.5rem auto; padding: 0 1rem; gap: 1.5rem;">
+    <div class="form-panel">
+        <h3 class="section-title">Add Class Fee</h3>
+        <form method="POST" style="display: grid; gap: 1rem;">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label>{{ form.class_name.label }}</label>
+                {{ form.class_name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.fee_amount.label }}</label>
+                {{ form.fee_amount(class="form-control") }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.pta_amount.label }}</label>
+                {{ form.pta_amount(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+
+    <div class="fee-list-panel">
+        <h3 class="section-title">Current Fee Structure</h3>
+        {% if fees %}
+        <div class="table-container" style="margin-top: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Tuition Fee</th>
+                        <th>PTA Levy</th>
+                        <th>Added On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in fees %}
+                    <tr class="fee-row">
+                        <td>{{ fee.class_name }}</td>
+                        <td class="fee-value">{{ "{:,.0f}".format(fee.fee_amount) }}</td>
+                        <td class="pta-value">{{ "{:,.0f}".format(fee.pta_amount) }}</td>
+                        <td>{{ fee.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_school_fee', fee_id=fee.id) }}" style="display:inline; margin:0;">
+                                {{ csrf_token() }}
+                                <button type="submit" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="margin-top: 1rem; padding: 1.5rem; background: #f8f9fa; border-radius: 12px; color: var(--gray);">
+            No fee entries have been added yet for this session.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if fees %}
+<script>
+function formatNumber(value) {
+    return Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function updateFeeSummary() {
+    const rows = document.querySelectorAll('.fee-row');
+    let totalTuition = 0;
+    let totalPTA = 0;
+
+    rows.forEach(row => {
+        const feeCell = row.querySelector('.fee-value');
+        const ptaCell = row.querySelector('.pta-value');
+        const feeAmount = parseFloat(feeCell.textContent.replace(/,/g, '')) || 0;
+        const ptaAmount = parseFloat(ptaCell.textContent.replace(/,/g, '')) || 0;
+        totalTuition += feeAmount;
+        totalPTA += ptaAmount;
+    });
+
+    document.getElementById('fee-total').textContent = formatNumber(totalTuition);
+    document.getElementById('pta-total').textContent = formatNumber(totalPTA);
+}
+
+window.addEventListener('DOMContentLoaded', updateFeeSummary);
+</script>
+{% endif %}
+{% endblock %}

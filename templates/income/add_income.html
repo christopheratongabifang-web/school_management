@@ -3,36 +3,21 @@
 {% block content %}
 <div class="form-container">
     <h2>Record School Income</h2>
-<<<<<<< HEAD
-    <p style="color: var(--gray); margin-bottom: 1rem;">Select the income type and include the student class or PTA level information.</p>
-    <p style="color: var(--gray); margin-bottom: 2rem;">
-        Default Fees: {{ "{:,.0f}".format(default_fee_amount) }} FCFA · Default P.T.A Amount: {{ "{:,.0f}".format(default_pta_amount) }} FCFA
-    </p>
-=======
-    <p style="color: var(--gray); margin-bottom: 2rem;">Add new revenue sources (Fees, Donations, etc.)</p>
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
+    <p style="color: var(--gray); margin-bottom: 2rem;">Enter new school income with optional student and PTA details.</p>
     
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div class="form-group">
-<<<<<<< HEAD
             <label>Source</label>
             {{ form.source(class="form-control") }}
         </div>
         <div class="form-group">
-=======
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
             <label>Amount (FCFA)</label>
             {{ form.amount(class="form-control", placeholder="e.g. 50000") }}
         </div>
         <div class="form-group">
-<<<<<<< HEAD
             <label>Student Name</label>
             {{ form.student_name(class="form-control", placeholder="e.g. John Doe") }}
-        </div>
-        <div class="form-group">
-            <label>Session</label>
-            {{ form.student_session(class="form-control") }}
         </div>
         <div class="form-group">
             <label>Student Class</label>
@@ -45,10 +30,6 @@
         <div class="form-group">
             <label>P.T.A Level / Levy</label>
             {{ form.pta_level(class="form-control", placeholder="e.g. Primary PTA Levy") }}
-=======
-            <label>Source</label>
-            {{ form.source(class="form-control", placeholder="e.g. Registration Fees") }}
->>>>>>> 833bb768ed7c6fccffd359ca260d50e7b6fd6f09
         </div>
         <div class="form-group">
             <label>Description</label>
